@@ -51,7 +51,7 @@ export function AdminDashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {stats.map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 p-3 sm:p-4 flex flex-col gap-2 sm:gap-3">
+            className="bg-white rounded-xl sm:rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border-transparent p-3 sm:p-4 flex flex-col gap-2 sm:gap-3">
             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center ${s.color}`}>{s.icon}</div>
             <div>
               <p className="text-lg sm:text-xl font-bold text-gray-900">{s.value}</p>
@@ -62,7 +62,7 @@ export function AdminDashboardPage() {
       </div>
 
       {/* Recent Orders with WhatsApp Notify */}
-      <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 p-3 sm:p-6">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border-transparent p-3 sm:p-6">
         <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Recent Orders</h2>
         {orders.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-8">No orders yet.</p>
@@ -71,7 +71,7 @@ export function AdminDashboardPage() {
             <div className="inline-block min-w-full align-middle px-3 sm:px-0">
               <table className="w-full text-sm min-w-[480px]">
                 <thead>
-                  <tr className="text-gray-500 text-[10px] sm:text-xs uppercase tracking-wider border-b border-indigo-600/5">
+                  <tr className="text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">
                     <th className="text-left py-3 pr-2 sm:pr-4">Order</th>
                     <th className="text-left py-3 pr-2 sm:pr-4">Customer</th>
                     <th className="text-left py-3 pr-2 sm:pr-4">Total</th>
@@ -79,7 +79,7 @@ export function AdminDashboardPage() {
                     <th className="text-left py-3">Notify</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#036e26]/5">
+                <tbody className="divide-y divide-slate-100">
                   {orders.slice(0, 8).map((order) => (
                     <tr key={order.id} className="hover:bg-white/30 transition-colors">
                       <td className="py-3 pr-2 sm:pr-4 font-semibold text-gray-900 text-xs sm:text-sm">#{order.id}</td>

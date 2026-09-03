@@ -48,15 +48,15 @@ export function AdminLayout({ children }) {
   };
 
   if (!admin) return (
-    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+    <div className="min-h-screen bg-[#F4F7F9] flex items-center justify-center">
       <div className="w-10 h-10 border-4 border-gray-800/20 border-t-[#036e26] rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex">
+    <div className="min-h-screen bg-[#F4F7F9] flex">
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-black border-b border-gray-800 px-4 py-3 flex items-center justify-between z-50">
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-[#050B14] border-b border-gray-800 px-4 py-3 flex items-center justify-between z-50">
         <div className="flex items-center gap-2">
           <img src={logo} alt="Aradhana Apparels" className="h-8 object-contain" />
           <span className="font-bold text-lg"><span className="text-white">Aradhana Apparels</span> <span className="text-sm font-normal text-gray-400">Admin</span></span>
@@ -72,7 +72,7 @@ export function AdminLayout({ children }) {
       )}
 
       {/* Sidebar */}
-      <aside className={`w-64 bg-black border-r border-gray-800 flex flex-col fixed h-full z-50 transition-transform ${
+      <aside className={`w-64 bg-[#050B14] border-r border-gray-800 flex flex-col fixed h-full z-50 transition-transform ${
         mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}>
         <div className="p-5 border-b border-gray-800">
@@ -97,7 +97,7 @@ export function AdminLayout({ children }) {
           {NAV.map((item) => (
             <Link key={item.href} to={item.href} onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-sans font-medium transition-colors ${
-                pathname === item.href ? "bg-white/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
+                pathname === item.href ? "bg-[#D4AF37]/15 text-[#D4AF37]" : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}>
               {item.icon} {item.label}
             </Link>

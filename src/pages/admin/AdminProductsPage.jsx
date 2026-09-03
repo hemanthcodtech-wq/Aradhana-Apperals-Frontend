@@ -321,11 +321,11 @@ export function AdminProductsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-[#08183A]/10 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border-transparent overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#FDF8F0] border-b border-[#08183A]/10">
+              <tr className="bg-slate-50 border-b border-slate-100">
                 <th className="px-4 py-3 text-xs font-bold text-[#08183A]/60 uppercase tracking-wider">Product (Variant/Size)</th>
                 <th className="px-4 py-3 text-xs font-bold text-[#08183A]/60 uppercase tracking-wider">Code (SKU)</th>
                 <th className="px-4 py-3 text-xs font-bold text-[#08183A]/60 uppercase tracking-wider">Category</th>
@@ -335,12 +335,12 @@ export function AdminProductsPage() {
                 <th className="px-4 py-3 text-right text-xs font-bold text-[#08183A]/60 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#08183A]/5">
+            <tbody className="divide-y divide-slate-100">
               {filteredSkus.map(row => {
                 const firstImg = row.variant.images?.[0] || row.product.image_url;
                 const offerObj = offers.find(o => o.id == row.size.offer_id);
                 return (
-                  <tr key={row.skuId} className="hover:bg-[#FDF8F0]/50 transition-colors">
+                  <tr key={row.skuId} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-[#08183A]/10">
