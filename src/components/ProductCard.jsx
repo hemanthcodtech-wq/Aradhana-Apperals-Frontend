@@ -98,8 +98,11 @@ export function ProductCard({ product, layout = 'grid' }) {
 
   let parsedSizes = [];
   try {
-    if (typeof product.sizes === 'string') parsedSizes = JSON.parse(product.sizes);
-    else if (Array.isArray(product.sizes)) parsedSizes = product.sizes;
+    if (product.variants && (typeof product.variants === 'string' || product.variants.length > 0)) {
+      parsedSizes = typeof product.variants === 'string' ? JSON.parse(product.variants) : product.variants;
+    } else if (product.sizes && (typeof product.sizes === 'string' || product.sizes.length > 0)) {
+      parsedSizes = typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes;
+    }
   } catch (e) {}
 
   let defaultSize = { size: 'Standard', price: product.price || 0 };

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldCheck, Truck, CheckCircle, MapPin, CreditCard, ChevronLeft, UserCircle2, Banknote, Info } from 'lucide-react';
+import { Trash2, Plus, Minus, Tag, CheckCircle, ShieldCheck, MapPin, Truck, CreditCard, Banknote, Navigation, MessageCircle, ChevronLeft, UserCircle2, Info } from 'lucide-react';
 import { Header } from '../components/Header';
 import { useCartStore } from '../store/useCartStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -13,7 +13,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/a
 export function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, getTotal, clearCart } = useCartStore();
+  const { items, getTotal, getSubtotal, deliveryCharge, clearCart } = useCartStore();
   const { token, user } = useAuthStore();
   const { showToast } = useToastStore();
   
@@ -110,6 +110,35 @@ export function CheckoutPage() {
       })
     });
     return res.json();
+  };
+
+  const handleWhatsAppOrder = () => {
+    const phone = "917353473534";
+    const itemList = items.map(i => {
+      const variantObj = typeof i.variant === 'object' ? i.variant : {};
+      const variantName = variantObj.size || variantObj.name || (typeof i.variant === 'string' ? i.variant : 'Standard');
+      const price = variantObj.our_price || variantObj.price || i.product.price || 0;
+      
+      return `- ${i.product.name} ${variantName !== 'Standard' ? `(Size: ${variantName})` : ''} x ${i.qty} = ₹${(Number(price) * i.qty).toFixed(2)}`;
+    }).join('\n');
+    const msg = `Hello, I would like to place an order!
+
+*Order Details:*
+${itemList}
+
+*Summary:*
+Subtotal: ₹${getSubtotal().toFixed(2)}
+Delivery: ₹${deliveryCharge}
+*Total Payable: ₹${grandTotal.toFixed(2)}*
+
+*Shipping Address:*
+${address.name}
+${address.mobile}
+${address.line1}, ${address.city}
+${address.state} - ${address.pincode}`;
+
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
   };
 
   const handlePlaceOrder = async () => {
@@ -444,37 +473,15 @@ export function CheckoutPage() {
                 >
                   Select Checkout Method
                 </button>
-              ) : step === 2 ? (
-                <button 
-                  onClick={handleProceedToPayment}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base rounded-xl py-4 shadow-lg hover:shadow-indigo-600/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
-                >
-                  Proceed to Payment
-                </button>
-              ) : (
+              ) : step >= 2 ? (
                 <button
-                  onClick={handlePlaceOrder}
-                  disabled={isPlacingOrder}
-                  className={`w-full text-white font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-all ${
-                    isPlacingOrder ? 'opacity-70 cursor-not-allowed shadow-none bg-gray-100 border border-gray-200 text-gray-500' :
-                    paymentMethod === 'cod'
-                      ? 'bg-green-600 hover:bg-green-500 shadow-md hover:-translate-y-1'
-                      : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-600/30 hover:-translate-y-1'
-                  }`}
+                  onClick={handleWhatsAppOrder}
+                  className="w-full text-white font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-all bg-green-500 hover:bg-green-600 shadow-lg hover:-translate-y-1 hover:shadow-green-500/30"
                 >
-                  {isPlacingOrder ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
-                      Placing Order...
-                    </div>
-                  ) : paymentMethod === 'cod' ? (
-                    <>
-                      <Banknote className="w-5 h-5" />
-                      Pay ₹{COD_ADVANCE} Advance & Place Order
-                    </>
-                  ) : 'Confirm & Pay'}
+                  <MessageCircle className="w-5 h-5" />
+                  Order via WhatsApp
                 </button>
-              )}
+              ) : null}
               
               <div className="flex items-center justify-center gap-2 mt-5 text-gray-500">
                 <ShieldCheck className="w-4 h-4" />
@@ -512,39 +519,15 @@ export function CheckoutPage() {
             >
               Select Checkout Method
             </button>
-          ) : step === 2 ? (
-            <button 
-              onClick={handleProceedToPayment}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base rounded-xl py-4 shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-2 hover:shadow-indigo-600/30"
-            >
-              Proceed to Payment
-              <span className="w-1.5 h-1.5 bg-white rounded-full mx-1 opacity-50" />
-              Step 3
-            </button>
-          ) : (
+          ) : step >= 2 ? (
             <button
-              onClick={handlePlaceOrder}
-              disabled={isPlacingOrder}
-              className={`w-full text-white font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-all ${
-                isPlacingOrder ? 'opacity-70 cursor-not-allowed shadow-none bg-gray-100 border border-gray-200 text-gray-500' :
-                paymentMethod === 'cod'
-                  ? 'bg-green-600 shadow-md hover:-translate-y-1'
-                  : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:-translate-y-1 hover:shadow-indigo-600/30'
-              }`}
+              onClick={handleWhatsAppOrder}
+              className="w-full text-white font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-all bg-green-500 hover:bg-green-600 shadow-lg hover:-translate-y-1 hover:shadow-green-500/30"
             >
-              {isPlacingOrder ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
-                  Placing Order...
-                </div>
-              ) : paymentMethod === 'cod' ? (
-                <>
-                  <Banknote className="w-5 h-5" />
-                  Pay ₹{COD_ADVANCE} Advance & Place Order
-                </>
-              ) : 'Confirm Order'}
+              <MessageCircle className="w-5 h-5" />
+              Order via WhatsApp
             </button>
-          )}
+          ) : null}
         
         <div className="flex items-center justify-center gap-2 mt-4">
           <ShieldCheck className="w-4 h-4 text-gray-400" />

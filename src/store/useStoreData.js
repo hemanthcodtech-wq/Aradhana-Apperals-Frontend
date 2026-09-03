@@ -34,25 +34,93 @@ export const useStoreData = create((set) => ({
   fetchData: async () => {
     try {
       set({ loading: true });
-      const [prodRes, catRes] = await Promise.all([
+      const [prodRes, catRes, offerRes] = await Promise.all([
         fetch(`${BACKEND_URL}/general/products`),
-        fetch(`${BACKEND_URL}/general/categories`)
+        fetch(`${BACKEND_URL}/general/categories`),
+        fetch(`${BACKEND_URL}/offers/active`).catch(() => ({ ok: false }))
       ]);
+      
       const prodData = await prodRes.json();
       const catData = await catRes.json();
+      const offerData = offerRes && offerRes.ok ? await offerRes.json() : { offers: [] };
       
-      set({ 
-        products: prodData.products || [], 
-        categories: catData.categories || [],
-        loading: false 
+      let products = prodData.products || [];
+      const categories = catData.categories || [];
+      const offers = offerData.offers || [];
+
+      // Apply offers
+      const globalOffers = offers.filter(o => o.offer_type === 'offer' && o.scope === 'all');
+      const categoryOffers = offers.filter(o => o.offer_type === 'offer' && o.scope === 'category');
+      const productOffers = offers.filter(o => o.offer_type === 'offer' && o.scope === 'products');
+
+      products = products.map(p => {
+        let discount = 0;
+        const applicableOffers = [];
+        
+        globalOffers.forEach(o => applicableOffers.push(o.discount_percent));
+        
+        categoryOffers.forEach(o => {
+          if (o.category_ids && o.category_ids.includes(p.category_id)) {
+            applicableOffers.push(o.discount_percent);
+          }
+        });
+        
+        productOffers.forEach(o => {
+          if (o.product_ids && o.product_ids.includes(p.id)) {
+            applicableOffers.push(o.discount_percent);
+          }
+        });
+        
+        if (applicableOffers.length > 0) {
+          discount = Math.max(...applicableOffers);
+        }
+        
+        if (discount > 0) {
+          const originalMrp = Number(p.mrp) || Number(p.price) || 0;
+          const originalPrice = Number(p.price) || originalMrp;
+          p.mrp = originalMrp;
+          p.price = Math.round(originalPrice * (1 - discount / 100));
+          
+          const processSizeArray = (arr) => {
+            return arr.map(s => {
+              if (s.sizes && Array.isArray(s.sizes)) {
+                s.sizes = processSizeArray(s.sizes);
+              } else {
+                const sOriginalMrp = Number(s.mrp) || Number(s.our_price) || Number(s.price) || originalMrp;
+                const sOriginalPrice = Number(s.our_price) || Number(s.price) || sOriginalMrp;
+                s.mrp = sOriginalMrp;
+                s.our_price = Math.round(sOriginalPrice * (1 - discount / 100));
+                s.price = s.our_price;
+              }
+              return s;
+            });
+          };
+
+          if (p.sizes) {
+            try {
+              let parsedSizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes) : p.sizes;
+              if (Array.isArray(parsedSizes)) {
+                p.sizes = processSizeArray(parsedSizes);
+              }
+            } catch (e) {}
+          }
+          
+          if (p.variants) {
+            try {
+              let parsedVariants = typeof p.variants === 'string' ? JSON.parse(p.variants) : p.variants;
+              if (Array.isArray(parsedVariants)) {
+                p.variants = processSizeArray(parsedVariants);
+              }
+            } catch (e) {}
+          }
+        }
+        return p;
       });
+      
+      set({ products, categories, loading: false });
     } catch (err) {
-      console.warn("Backend API unavailable. Loading mock data...");
-      set({ 
-        products: MOCK_PRODUCTS, 
-        categories: MOCK_CATEGORIES,
-        loading: false 
-      });
+      console.warn("Backend API unavailable. Returning empty arrays.", err);
+      set({ products: [], categories: [], loading: false });
     }
   }
 }));

@@ -46,6 +46,20 @@ export function SignupPage() {
     if (e.key === 'Backspace' && !otp[idx] && idx > 0) otpRefs.current[idx - 1]?.focus();
   };
 
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
+    if (pastedData) {
+      const nextOtp = [...otp];
+      for (let i = 0; i < pastedData.length; i++) {
+        nextOtp[i] = pastedData[i];
+      }
+      setOtp(nextOtp);
+      const focusIndex = Math.min(pastedData.length, 5);
+      otpRefs.current[focusIndex]?.focus();
+    }
+  };
+
   const handleVerify = async (e) => {
     e.preventDefault(); setLocalError('');
     const code = otp.join('');
@@ -212,9 +226,9 @@ export function SignupPage() {
                       type="text" inputMode="numeric" maxLength={1} value={digit}
                       onChange={(e) => handleOtpChange(e.target.value, idx)}
                       onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                      className={`flex-1 h-14 text-center text-xl font-extrabold rounded-2xl border-2 focus:outline-none transition-all
-                        ${digit ? 'border-indigo-600 text-indigo-600 shadow-[0_0_0_4px_rgba(254,102,3,0.12)]' : 'border-gray-200 bg-gray-50 text-gray-900 focus:border-[#022A21] focus:bg-white focus:shadow-[0_0_0_4px_rgba(2,42,33,0.08)]'}`}
-                      style={digit ? { background: 'rgba(254,102,3,0.06)' } : {}}
+                      onPaste={handleOtpPaste}
+                      className={`w-0 min-w-0 flex-1 h-14 sm:h-16 text-center text-2xl font-black rounded-2xl border-2 focus:outline-none transition-all duration-300
+                        ${digit ? 'border-[#022A21] text-[#022A21] shadow-[0_0_0_4px_rgba(2,42,33,0.12)] bg-[#022A21]/5' : 'border-gray-200 bg-gray-50/50 text-gray-900 focus:border-[#022A21] focus:bg-white focus:shadow-[0_0_0_4px_rgba(2,42,33,0.08)]'}`}
                     />
                   ))}
                 </div>

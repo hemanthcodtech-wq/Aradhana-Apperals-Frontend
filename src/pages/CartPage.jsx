@@ -8,6 +8,55 @@ import { useGSAP } from '@gsap/react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api';
 
+function getCartImage(product) {
+  if (!product) return 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&q=80';
+  
+  const extractFromVariants = (variants) => {
+    let parsed = variants;
+    if (typeof parsed === 'string') {
+      try { parsed = JSON.parse(parsed); } catch(e){}
+    }
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].images && Array.isArray(parsed[0].images) && parsed[0].images.length > 0) {
+      const img = parsed[0].images[0];
+      if (typeof img === 'string' && img.startsWith('http')) return img;
+    }
+    return null;
+  };
+
+  if (product.variants) {
+    const img = extractFromVariants(product.variants);
+    if (img) return img;
+  }
+  
+  if (product.sizes) {
+    const img = extractFromVariants(product.sizes);
+    if (img) return img;
+  }
+
+  if (product.images) {
+    let imgs = product.images;
+    if (typeof imgs === 'string') {
+      try { imgs = JSON.parse(imgs); } catch(e){}
+    }
+    if (Array.isArray(imgs) && imgs.length > 0) {
+      if (typeof imgs[0] === 'string' && imgs[0].startsWith('http')) return imgs[0];
+    }
+  }
+
+  if (product.image_url) {
+    let url = product.image_url;
+    if (typeof url === 'string' && url.trim().startsWith('[')) {
+      try {
+        const arr = JSON.parse(url);
+        if (Array.isArray(arr) && arr[0] && arr[0].startsWith('http')) return arr[0];
+      } catch(e){}
+    }
+    if (typeof url === 'string' && url.startsWith('http')) return url;
+  }
+  
+  return 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&q=80';
+}
+
 export function CartPage() {
   const navigate = useNavigate();
   const { items, removeFromCart, updateQuantity, getSubtotal, getTotal, deliveryCharge } = useCartStore();
@@ -134,7 +183,7 @@ export function CartPage() {
                 </button>
                 
                 <div className="w-24 h-24 bg-gray-50 rounded-xl shrink-0 p-2 border border-gray-100">
-                  <img src={item.product.images && item.product.images.length > 0 ? item.product.images[0] : item.product.image_url} alt={item.product.name} className="w-full h-full object-contain mix-blend-multiply" />
+                  <img src={getCartImage(item.product)} alt={item.product.name} className="w-full h-full object-contain mix-blend-multiply" />
                 </div>
                 
                 <div className="flex flex-col justify-between py-1 flex-grow pr-8">

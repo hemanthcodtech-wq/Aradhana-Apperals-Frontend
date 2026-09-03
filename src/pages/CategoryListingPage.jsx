@@ -18,6 +18,12 @@ export function CategoryListingPage() {
   const { products, categories, loading } = useStoreData();
   const [banners, setBanners] = useState([]);
   
+  // Draft state for mobile filters
+  const [draftCategoryId, setDraftCategoryId] = useState('all');
+  const [draftModelQuery, setDraftModelQuery] = useState('');
+  const [draftPriceQuery, setDraftPriceQuery] = useState('');
+  const [draftSortBy, setDraftSortBy] = useState('featured');
+  
   useEffect(() => {
     const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
     fetch(`${url}/general/banners?type=category_page_banner`)
@@ -54,8 +60,11 @@ export function CategoryListingPage() {
     let price = p.price || 0;
     try {
       let parsedSizes = [];
-      if (typeof p.sizes === 'string') parsedSizes = JSON.parse(p.sizes);
-      else if (Array.isArray(p.sizes)) parsedSizes = p.sizes;
+      if (p.variants && (typeof p.variants === 'string' || p.variants.length > 0)) {
+        parsedSizes = typeof p.variants === 'string' ? JSON.parse(p.variants) : p.variants;
+      } else if (p.sizes && (typeof p.sizes === 'string' || p.sizes.length > 0)) {
+        parsedSizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes) : p.sizes;
+      }
       
       if (parsedSizes?.length > 0) {
         if (Array.isArray(parsedSizes[0].sizes) && parsedSizes[0].sizes.length > 0) {
@@ -107,38 +116,72 @@ export function CategoryListingPage() {
     filteredProducts.sort((a, b) => getProductPrice(b) - getProductPrice(a));
   }
 
-  const handleCategoryChange = (newCatId) => {
-    // Clear subcategory when changing category
-    setSearchParams({});
-    navigate(`/category/${newCatId}`);
-    setShowMobileFilters(false);
+  const handleCategoryChange = (newCatId, isMobile = false) => {
+    if (isMobile) {
+      setDraftCategoryId(newCatId);
+      setDraftModelQuery('');
+    } else {
+      setSearchParams({});
+      navigate(`/category/${newCatId}`);
+    }
   };
 
-  const handleModelChange = (model) => {
-    if (model) {
-      const newParams = Object.fromEntries(searchParams.entries());
-      newParams.model = model;
-      setSearchParams(newParams);
+  const handleModelChange = (model, isMobile = false) => {
+    if (isMobile) {
+      setDraftModelQuery(model ? model : '');
+    } else {
+      if (model) {
+        const newParams = Object.fromEntries(searchParams.entries());
+        newParams.model = model;
+        setSearchParams(newParams);
+      } else {
+        const newParams = Object.fromEntries(searchParams.entries());
+        delete newParams.model;
+        setSearchParams(newParams);
+      }
+    }
+  };
+
+  const handlePriceChange = (priceKey, isMobile = false) => {
+    if (isMobile) {
+      setDraftPriceQuery(draftPriceQuery === priceKey && priceKey ? '' : priceKey);
     } else {
       const newParams = Object.fromEntries(searchParams.entries());
-      delete newParams.model;
+      if (priceKey && newParams.price !== priceKey) {
+        newParams.price = priceKey;
+      } else {
+        delete newParams.price;
+      }
       setSearchParams(newParams);
     }
   };
 
-  const handlePriceChange = (priceKey) => {
-    const newParams = Object.fromEntries(searchParams.entries());
-    if (priceKey && newParams.price !== priceKey) {
-      newParams.price = priceKey;
+  const handleSortChange = (newSort, isMobile = false) => {
+    if (isMobile) {
+      setDraftSortBy(newSort);
     } else {
-      delete newParams.price; // toggle off
+      setSortBy(newSort);
     }
+  };
+
+  const openMobileFilters = () => {
+    setDraftCategoryId(categoryId);
+    setDraftModelQuery(modelQuery || '');
+    setDraftPriceQuery(priceQuery || '');
+    setDraftSortBy(sortBy);
+    setShowMobileFilters(true);
+  };
+
+  const applyMobileFilters = () => {
+    if (draftCategoryId !== categoryId) {
+      navigate(`/category/${draftCategoryId}`);
+    }
+    const newParams = {};
+    if (draftModelQuery) newParams.model = draftModelQuery;
+    if (draftPriceQuery) newParams.price = draftPriceQuery;
     setSearchParams(newParams);
-  };
-
-  const handleSortChange = (newSort) => {
-    setSortBy(newSort);
-    // Don't close immediately on sort change so they can apply multiple, but closing on sort is fine for a simpler UX
+    setSortBy(draftSortBy);
+    setShowMobileFilters(false);
   };
 
   if (loading) {
@@ -150,100 +193,109 @@ export function CategoryListingPage() {
   }
 
   const currentCat = categories.find(c => c.id.toString() === categoryId);
-  const currentModels = currentCat ? (currentCat.models || []) : [];
+  const currentModels = currentCat ? (currentCat.subcategories?.length > 0 ? currentCat.subcategories : (currentCat.models || [])) : [];
 
-  const FilterSidebarContent = () => (
-    <div className="flex flex-col gap-6">
-      {/* Categories */}
-      <div>
-        <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Categories</h3>
-        <ul className="space-y-1.5">
-          <li>
-            <button 
-              onClick={() => handleCategoryChange('all')}
-              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all border ${categoryId === 'all' ? 'bg-orange-50/50 border-indigo-600 text-indigo-600 font-bold shadow-sm' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-200'}`}
-            >
-              All Products
-            </button>
-          </li>
-          {categories.map(cat => (
-            <li key={cat.id}>
+  const FilterSidebarContent = ({ isMobile = false }) => {
+    const activeCatId = isMobile ? draftCategoryId : categoryId;
+    const activeModel = isMobile ? draftModelQuery : modelQuery;
+    const activePrice = isMobile ? draftPriceQuery : priceQuery;
+    const activeSort = isMobile ? draftSortBy : sortBy;
+    const activeCatObj = categories.find(c => c.id.toString() === activeCatId);
+    const activeModels = activeCatObj ? (activeCatObj.subcategories?.length > 0 ? activeCatObj.subcategories : (activeCatObj.models || [])) : [];
+
+    return (
+      <div className="flex flex-col gap-6">
+        {/* Categories */}
+        <div>
+          <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Categories</h3>
+          <ul className="space-y-1.5">
+            <li>
               <button 
-                onClick={() => handleCategoryChange(cat.id.toString())}
-                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all border ${categoryId === cat.id.toString() ? 'bg-orange-50/50 border-indigo-600 text-indigo-600 font-bold shadow-sm' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-200'}`}
+                onClick={() => handleCategoryChange('all', isMobile)}
+                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all border ${activeCatId === 'all' ? 'bg-orange-50/50 border-indigo-600 text-indigo-600 font-bold shadow-sm' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-200'}`}
               >
-                {cat.name}
+                All Products
               </button>
             </li>
-          ))}
-        </ul>
-      </div>
+            {categories.map(cat => (
+              <li key={cat.id}>
+                <button 
+                  onClick={() => handleCategoryChange(cat.id.toString(), isMobile)}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all border ${activeCatId === cat.id.toString() ? 'bg-orange-50/50 border-indigo-600 text-indigo-600 font-bold shadow-sm' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-200'}`}
+                >
+                  {cat.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      {/* Subcategories (Models) */}
-      {currentModels.length > 0 && (
-        <div className="border-t border-gray-100 pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Subcategories</h3>
-            {modelQuery && (
-              <button onClick={() => handleModelChange('')} className="text-[11px] text-indigo-600 hover:text-indigo-600/80 font-bold bg-orange-50/50 px-2 py-1 rounded-md transition-colors">Clear</button>
-            )}
+        {/* Subcategories (Models) */}
+        {activeModels.length > 0 && (
+          <div className="border-t border-gray-100 pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Subcategories</h3>
+              {activeModel && (
+                <button onClick={() => handleModelChange('', isMobile)} className="text-[11px] text-indigo-600 hover:text-indigo-600/80 font-bold bg-orange-50/50 px-2 py-1 rounded-md transition-colors">Clear</button>
+              )}
+            </div>
+            <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {activeModels.map(model => (
+                <label key={model} className="flex items-center gap-3 cursor-pointer group">
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${activeModel === model ? 'border-indigo-600 bg-indigo-600 shadow-sm' : 'border-gray-300 group-hover:border-indigo-600 bg-white'}`}>
+                    {activeModel === model && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                  </div>
+                  <span className={`text-sm ${activeModel === model ? 'text-indigo-600 font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>{model}</span>
+                  <input type="radio" name="model_radio" className="hidden" checked={activeModel === model} onChange={() => handleModelChange(model, isMobile)} />
+                </label>
+              ))}
+            </div>
           </div>
-          <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-            {currentModels.map(model => (
-              <label key={model} className="flex items-center gap-3 cursor-pointer group">
-                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${modelQuery === model ? 'border-indigo-600 bg-indigo-600 shadow-sm' : 'border-gray-300 group-hover:border-indigo-600 bg-white'}`}>
-                  {modelQuery === model && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+        )}
+
+        {/* Shop by Price */}
+        <div className="border-t border-gray-100 pt-6 mb-6">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Shop by Price</h3>
+          <div className="space-y-3">
+            {[
+              { id: 'under_1000', label: 'Under ₹1,000' },
+              { id: '1000_2000', label: '₹1,000 - ₹2,000' },
+              { id: '2000_5000', label: '₹2,000 - ₹5,000' },
+              { id: 'above_5000', label: 'Above ₹5,000' },
+            ].map(opt => (
+              <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
+                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${activePrice === opt.id ? 'border-indigo-600 bg-indigo-600 shadow-sm' : 'border-gray-300 group-hover:border-indigo-600 bg-white'}`}>
+                  {activePrice === opt.id && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                 </div>
-                <span className={`text-sm ${modelQuery === model ? 'text-indigo-600 font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>{model}</span>
-                <input type="radio" name="model_radio" className="hidden" checked={modelQuery === model} onChange={() => handleModelChange(model)} />
+                <span className={`text-sm ${activePrice === opt.id ? 'text-indigo-600 font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>{opt.label}</span>
+                <input type="radio" name="price_radio" className="hidden" checked={activePrice === opt.id} onChange={() => handlePriceChange(opt.id, isMobile)} />
               </label>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Shop by Price */}
-      <div className="border-t border-gray-100 pt-6 mb-6">
-        <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Shop by Price</h3>
-        <div className="space-y-3">
-          {[
-            { id: 'under_1000', label: 'Under ₹1,000' },
-            { id: '1000_2000', label: '₹1,000 - ₹2,000' },
-            { id: '2000_5000', label: '₹2,000 - ₹5,000' },
-            { id: 'above_5000', label: 'Above ₹5,000' },
-          ].map(opt => (
-            <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
-              <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${priceQuery === opt.id ? 'border-indigo-600 bg-indigo-600 shadow-sm' : 'border-gray-300 group-hover:border-indigo-600 bg-white'}`}>
-                {priceQuery === opt.id && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
-              </div>
-              <span className={`text-sm ${priceQuery === opt.id ? 'text-indigo-600 font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>{opt.label}</span>
-              <input type="radio" name="price_radio" className="hidden" checked={priceQuery === opt.id} onChange={() => handlePriceChange(opt.id)} />
-            </label>
-          ))}
+        {/* Sort By */}
+        <div className="border-t border-gray-100 pt-6">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Sort By</h3>
+          <div className="space-y-3">
+            {[
+              { id: 'featured', label: 'Featured' },
+              { id: 'price_asc', label: 'Price: Low to High' },
+              { id: 'price_desc', label: 'Price: High to Low' },
+            ].map(opt => (
+              <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${activeSort === opt.id ? 'border-indigo-600 bg-indigo-600 shadow-sm' : 'border-gray-300 group-hover:border-indigo-600 bg-white'}`}>
+                  {activeSort === opt.id && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+                <span className={`text-sm ${activeSort === opt.id ? 'text-indigo-600 font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>{opt.label}</span>
+                <input type="radio" name="sort_radio" className="hidden" checked={activeSort === opt.id} onChange={() => handleSortChange(opt.id, isMobile)} />
+              </label>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Sort By */}
-      <div className="border-t border-gray-100 pt-6">
-        <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Sort By</h3>
-        <div className="space-y-3">
-          {[
-            { id: 'featured', label: 'Featured' },
-            { id: 'price_asc', label: 'Price: Low to High' },
-            { id: 'price_desc', label: 'Price: High to Low' },
-          ].map(opt => (
-            <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${sortBy === opt.id ? 'border-indigo-600 bg-indigo-600 shadow-sm' : 'border-gray-300 group-hover:border-indigo-600 bg-white'}`}>
-                {sortBy === opt.id && <div className="w-2 h-2 rounded-full bg-white" />}
-              </div>
-              <span className={`text-sm ${sortBy === opt.id ? 'text-indigo-600 font-bold' : 'text-gray-600 group-hover:text-gray-900'}`}>{opt.label}</span>
-              <input type="radio" name="sort_radio" className="hidden" checked={sortBy === opt.id} onChange={() => handleSortChange(opt.id)} />
-            </label>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="bg-transparent min-h-screen pb-20">
@@ -259,7 +311,7 @@ export function CategoryListingPage() {
             
             {/* Mobile Filter Trigger */}
             <button 
-              onClick={() => setShowMobileFilters(true)}
+              onClick={openMobileFilters}
               className="lg:hidden flex items-center gap-2 text-[13px] font-extrabold text-white bg-gray-900 px-5 py-2.5 rounded-xl shadow-md shadow-gray-900/20 active:scale-95 transition-all"
             >
               <Filter className="w-4 h-4" />
@@ -351,18 +403,23 @@ export function CategoryListingPage() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-              <FilterSidebarContent />
+              <FilterSidebarContent isMobile={true} />
             </div>
             
             <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-4">
               <button 
-                onClick={() => { handleCategoryChange('all'); setSortBy('featured'); setShowMobileFilters(false); }}
+                onClick={() => { 
+                  setDraftCategoryId('all'); 
+                  setDraftModelQuery('');
+                  setDraftPriceQuery('');
+                  setDraftSortBy('featured'); 
+                }}
                 className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 hover:bg-gray-100 font-bold rounded-xl transition-all bg-white"
               >
                 Reset
               </button>
               <button 
-                onClick={() => setShowMobileFilters(false)}
+                onClick={applyMobileFilters}
                 className="flex-[2] px-4 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-md hover:bg-[#033429]"
               >
                 Apply Filters

@@ -173,7 +173,7 @@ export function AdminCategoriesPage() {
           <p className="text-gray-400 text-xs mt-0.5">Manage categories and their available models</p>
         </div>
         <button onClick={handleAdd}
-          className="flex items-center gap-2 bg-white hover:bg-[#004012] text-white px-4 py-2.5 rounded-xl font-semibold transition-colors">
+          className="flex items-center gap-2 bg-[#050B14] hover:bg-[#D4AF37] text-white px-4 py-2.5 rounded-xl font-semibold transition-colors">
           <Plus className="w-4 h-4" /> Add Category
         </button>
       </div>
@@ -202,6 +202,7 @@ export function AdminCategoriesPage() {
             </div>
             
             <div className="p-5 flex-1 bg-white">
+              {/* 
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Available Models</h4>
               {(!cat.models || cat.models.length === 0) ? (
                 <p className="text-sm text-gray-900/30">No models added.</p>
@@ -214,6 +215,7 @@ export function AdminCategoriesPage() {
                   ))}
                 </div>
               )}
+              */}
 
               {cat.subcategories && cat.subcategories.length > 0 && (
                 <>
@@ -293,6 +295,7 @@ export function AdminCategoriesPage() {
                 </div>
               </div>
 
+              {/* 
               <div className="pt-2 border-t border-gray-100">
                 <label className="text-xs font-semibold text-gray-700 mb-1 block">Available Models</label>
                 <div className="flex gap-2 mb-3">
@@ -315,6 +318,7 @@ export function AdminCategoriesPage() {
                   )}
                 </div>
               </div>
+              */}
 
               <div className="pt-4 border-t border-gray-100">
                 <label className="text-xs font-semibold text-gray-700 mb-1 block">Sub Categories</label>

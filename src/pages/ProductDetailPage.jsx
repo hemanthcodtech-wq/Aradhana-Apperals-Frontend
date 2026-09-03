@@ -28,8 +28,11 @@ export function ProductDetailPage() {
 
   let parsedSizes = [];
   try {
-    if (typeof product?.sizes === 'string') parsedSizes = JSON.parse(product.sizes);
-    else if (Array.isArray(product?.sizes)) parsedSizes = product.sizes;
+    if (product?.variants && (typeof product.variants === 'string' || product.variants.length > 0)) {
+      parsedSizes = typeof product.variants === 'string' ? JSON.parse(product.variants) : product.variants;
+    } else if (product?.sizes && (typeof product.sizes === 'string' || product.sizes.length > 0)) {
+      parsedSizes = typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes;
+    }
   } catch(e) {}
 
   const isHierarchical = parsedSizes.length > 0 && Array.isArray(parsedSizes[0].sizes);
@@ -39,9 +42,25 @@ export function ProductDetailPage() {
     ? currentSizesArray[selectedSizeIdx]
     : { size: 'Standard', price: product?.price || 0 };
 
-  const productImages = (currentVariant?.images?.length > 0)
-    ? currentVariant.images
-    : (product ? (product.images?.length > 0 ? product.images : (product.image_url ? [product.image_url] : [])) : []);
+  let parsedImages = [];
+  try {
+    if (currentVariant?.images) {
+      parsedImages = typeof currentVariant.images === 'string' ? JSON.parse(currentVariant.images) : currentVariant.images;
+    } else if (product?.images) {
+      parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+    } else if (product?.image_url) {
+      let url = product.image_url;
+      if (typeof url === 'string' && url.trim().startsWith('[')) {
+        parsedImages = JSON.parse(url);
+      } else {
+        parsedImages = [url];
+      }
+    }
+  } catch(e) {}
+
+  const productImages = Array.isArray(parsedImages) && parsedImages.length > 0 
+    ? parsedImages 
+    : [];
 
   const [mainImg, setMainImg] = useState(null);
 
@@ -109,7 +128,26 @@ export function ProductDetailPage() {
 
   const deliveryDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
 
-  const PLACEHOLDER = 'https://placehold.co/400x400/f5f5f5/999?text=No+Image';
+  const CATEGORY_FALLBACKS = {
+    tshirt: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&q=80',
+    shirt: 'https://images.unsplash.com/photo-1602810316693-3667c854239a?w=500&q=80',
+    jeans: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=500&q=80',
+    pant: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&q=80',
+    kurta: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=500&q=80',
+    saree: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&q=80',
+    default: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=500&q=80'
+  };
+
+  const text = `${product.name || ''} ${product.category || ''}`.toLowerCase();
+  let fallbackMatch = CATEGORY_FALLBACKS.default;
+  for (const [key, url] of Object.entries(CATEGORY_FALLBACKS)) {
+    if (key !== 'default' && text.includes(key)) {
+      fallbackMatch = url;
+      break;
+    }
+  }
+
+  const PLACEHOLDER = fallbackMatch;
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] pb-40 md:pb-12">

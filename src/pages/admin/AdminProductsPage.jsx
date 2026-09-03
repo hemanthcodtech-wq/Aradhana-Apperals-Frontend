@@ -245,7 +245,9 @@ export function AdminProductsPage() {
   };
   
   const selectedCatObj = categories.find(c => c.name === formData.category);
-  const availableModels = selectedCatObj?.models || [];
+  const availableModels = selectedCatObj?.subcategories?.length > 0 
+    ? selectedCatObj.subcategories 
+    : (selectedCatObj?.models || []);
 
   const skuRows = [];
   products.forEach(p => {
@@ -431,10 +433,10 @@ export function AdminProductsPage() {
                 
                 {availableModels.length > 0 && (
                   <div>
-                    <label className="text-xs font-sans font-semibold text-[#08183A]/70 mb-1 block">Model / Subcategory</label>
+                    <label className="text-xs font-sans font-semibold text-[#08183A]/70 mb-1 block">Subcategory</label>
                     <select value={formData.model} onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg bg-[#FDF8F0] border border-[#08183A]/10 focus:outline-none">
-                      <option value="">Select Model (Optional)</option>
+                      <option value="">Select Subcategory (Optional)</option>
                       {availableModels.map(m => (
                         <option key={m} value={m}>{m}</option>
                       ))}

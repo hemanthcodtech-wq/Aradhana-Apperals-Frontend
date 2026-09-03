@@ -6,11 +6,12 @@ import { Link } from "react-router-dom";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 const FROM_ADDRESS = {
   name: "Aradhana Apparels",
-  line1: "1-1-738, Vinayaka temple road",
-  city: "Koratla",
-  state: "Telangana",
-  pincode: "",
-  phone: "+91 90326 75205",
+  line1: "1st Floar #114, Gayatri Kutira",
+  city: "Shettihalli Bangalore",
+  state: "Karnataka",
+  pincode: "560015",
+  phone: "+91 73534 73534",
+  gstin: "29AIYPA6523E2Z1"
 };
 
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
@@ -134,35 +135,35 @@ export function AdminOrdersPage() {
               @page { size: A4; margin: 15mm 12mm 20mm 12mm; }
               body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; margin: 0; padding: 0; font-size: 10pt; line-height: 1.4; background-color: #ffffff; }
               .invoice-container { width: 100%; max-width: 100%; }
-              .invoice-header { border-bottom: 3px solid #E63A12; padding-bottom: 18px; margin-bottom: 20px; }
+              .invoice-header { border-bottom: 3px solid #050B14; padding-bottom: 18px; margin-bottom: 20px; }
               .header-table { width: 100%; border-collapse: collapse; }
               .header-table td { vertical-align: top; padding: 0; }
               .invoice-title-block { text-align: right; }
-              .invoice-title { font-size: 22pt; font-weight: bold; color: #E63A12; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+              .invoice-title { font-size: 22pt; font-weight: bold; color: #050B14; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
               .invoice-meta { margin-top: 8px; font-size: 9.5pt; color: #444444; line-height: 1.5; }
               .addresses-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-              .addresses-table td { width: 50%; vertical-align: top; padding: 12px; border: 1px solid #FFE4DE; }
-              .addresses-table td.from-box { background-color: #FFFDFD; }
-              .addresses-table td.ship-box { background-color: #FFFAF9; }
-              .section-heading { font-size: 9.5pt; font-weight: bold; color: #E63A12; text-transform: uppercase; border-bottom: 1px solid #FFE4DE; padding-bottom: 5px; margin-bottom: 8px; letter-spacing: 0.5px; }
+              .addresses-table td { width: 50%; vertical-align: top; padding: 12px; border: 1px solid #e2e8f0; }
+              .addresses-table td.from-box { background-color: #f8fafc; }
+              .addresses-table td.ship-box { background-color: #f8fafc; }
+              .section-heading { font-size: 9.5pt; font-weight: bold; color: #D4AF37; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 8px; letter-spacing: 0.5px; }
               .address-box { font-size: 9.5pt; color: #555555; line-height: 1.5; }
               .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; margin-top: 10px; }
-              .items-table th { background-color: #E63A12; color: #ffffff; font-weight: bold; font-size: 9.5pt; text-align: left; padding: 10px 12px; text-transform: uppercase; }
-              .items-table td { padding: 11px 12px; border-bottom: 1px solid #F6EFEF; font-size: 9.5pt; vertical-align: middle; }
-              .items-table tr:nth-child(even) td { background-color: #FFFAF9; }
+              .items-table th { background-color: #050B14; color: #ffffff; font-weight: bold; font-size: 9.5pt; text-align: left; padding: 10px 12px; text-transform: uppercase; }
+              .items-table td { padding: 11px 12px; border-bottom: 1px solid #f1f5f9; font-size: 9.5pt; vertical-align: middle; }
+              .items-table tr:nth-child(even) td { background-color: #f8fafc; }
               .totals-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
               .totals-table td { padding: 0; vertical-align: top; }
               .terms-cell { width: 55%; padding-right: 25px; }
               .summary-cell { width: 45%; }
               .inner-summary-table { width: 100%; border-collapse: collapse; }
-              .inner-summary-table td { padding: 8px 12px; font-size: 10pt; border-bottom: 1px solid #F6EFEF; }
+              .inner-summary-table td { padding: 8px 12px; font-size: 10pt; border-bottom: 1px solid #f1f5f9; }
               .inner-summary-table td.label { text-align: right; color: #555555; }
               .inner-summary-table td.value { text-align: right; font-weight: bold; width: 120px; }
-              .inner-summary-table tr.grand-total td { background-color: #FFEBE7; border-top: 2px solid #E63A12; border-bottom: 2px double #E63A12; font-weight: bold; color: #E63A12; font-size: 12pt; }
+              .inner-summary-table tr.grand-total td { background-color: #f8fafc; border-top: 2px solid #D4AF37; border-bottom: 2px double #D4AF37; font-weight: bold; color: #050B14; font-size: 12pt; }
               .print-btn { margin-top: 20px; text-align: center; }
               .print-btn button { padding: 8px 24px; margin: 0 8px; border-radius: 9999px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
-              .btn-primary { background: #E63A12; color: white; }
-              .btn-secondary { background: white; color: #E63A12; border: 1px solid #E63A12; }
+              .btn-primary { background: #050B14; color: white; }
+              .btn-secondary { background: white; color: #050B14; border: 1px solid #050B14; }
               @media print { .print-btn { display: none !important; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
           </style>
       </head>
@@ -173,9 +174,10 @@ export function AdminOrdersPage() {
                   <tr>
                       <td>
                           <div style="font-size: 9pt; color: #555555; margin-top: 8px; line-height: 1.5;">
-                              <strong style="font-size: 20px;"><span style="color: #4f46e5;">Ind</span><span style="color: #036e26;">basket</span></strong><br>
-                              1-1-738, Vinayaka temple road<br>
-                              Phone: +91 90326 75205 | Email: aradhanaapparels@gmail.com<br>
+                              <strong style="font-size: 20px;"><span style="color: #050B14;">Aradhana</span> <span style="color: #D4AF37;">Apparels</span></strong><br>
+                              1st Floar #114, Gayatri Kutira<br>
+                              Junjappa Temple Road, Shettihalli Bangalore-560015<br>
+                              Phone: +91 73534 73534 | GSTIN: 29AIYPA6523E2Z1<br>
                           </div>
                       </td>
                       <td class="invoice-title-block">
@@ -195,10 +197,11 @@ export function AdminOrdersPage() {
                   <td class="from-box">
                       <div class="section-heading">From Address</div>
                       <div class="address-box">
-                          <strong><span style="color: #4f46e5;">Ind</span><span style="color: #036e26;">basket</span></strong><br>
-                          1-1-738, Vinayaka temple road,<br>
-                          Koratla, Telangana, India<br>
-                          <strong>Phone:</strong> +91 90326 75205
+                          <strong><span style="color: #050B14;">Aradhana</span> <span style="color: #D4AF37;">Apparels</span></strong><br>
+                          1st Floar #114, Gayatri Kutira,<br>
+                          Junjappa Temple Road, Shettihalli<br>
+                          Bangalore-560015, Karnataka, India<br>
+                          <strong>Phone:</strong> +91 73534 73534
                       </div>
                   </td>
                   <td class="ship-box">
@@ -425,6 +428,22 @@ export function AdminOrdersPage() {
 
               {expanded === order.id && (
                 <div className="border-t border-indigo-600/5 p-3 sm:p-4 lg:p-5 space-y-4">
+                  {/* Customer Details */}
+                  {(() => {
+                    let address = {};
+                    try { address = typeof order.address === 'string' ? JSON.parse(order.address) : (order.address || {}); } catch(e) {}
+                    return (
+                      <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 font-bold">Customer Details</p>
+                        <div className="text-sm text-slate-700 space-y-1">
+                          <p><span className="font-semibold text-slate-900">Name:</span> {order.user_name || address.name || "Guest"}</p>
+                          <p><span className="font-semibold text-slate-900">Phone:</span> {order.user_phone || address.mobile || "N/A"}</p>
+                          <p className="pt-1 border-t border-slate-200 mt-1"><span className="font-semibold text-slate-900">Address:</span> {address.line1 ? `${address.line1}, ` : ''}{address.line2 ? `${address.line2}, ` : ''}{address.city ? `${address.city}, ` : ''}{address.state || ''} {address.pincode || ''}</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Update Status</p>
@@ -433,6 +452,7 @@ export function AdminOrdersPage() {
                         {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
+                    {/* 
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Shipment</p>
                       {order.tracking_id && order.tracking_id.trim() !== "" ? (
@@ -458,6 +478,7 @@ export function AdminOrdersPage() {
                         </button>
                       )}
                     </div>
+                    */}
                   </div>
 
                   {/* Action Buttons */}

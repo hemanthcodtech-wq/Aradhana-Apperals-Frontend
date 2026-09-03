@@ -354,7 +354,7 @@ export function Header({ variant = 'default', title, showShare = false }) {
           <div className="w-full max-w-lg mx-auto">
             {/* Title and Actions row */}
             <div className="flex items-center justify-between">
-              
+
               {/* Left Side: Logo */}
               <div className="flex items-center flex-1">
                 <Link to="/" className="flex items-center justify-center relative group gap-2">
